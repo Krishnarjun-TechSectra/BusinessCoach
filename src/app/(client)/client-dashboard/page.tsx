@@ -93,7 +93,7 @@ export default function Dashboard() {
           )}
 
           <div className="lg:col-span-1">
-            <Leaderboard users={leaderboardData} />
+            <Leaderboard />
           </div>
         </div>
       </div>
