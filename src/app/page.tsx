@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Rocket } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -42,29 +43,35 @@ export default function Home() {
   }
 
   return (
-
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md shadow-2xl">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md shadow-2xl">
+        <CardHeader className="text-center">
+          {/* <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
               <Rocket className="h-8 w-8" />
             </div>
             <CardTitle className="text-3xl font-bold">
               Akhil Business Coach
-            </CardTitle>
-            <CardDescription>
-              Your hub for tracking progress and achieving business goals.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="grid grid-cols-1 gap-4 ">
-              <Button asChild size="lg" >
-                <Link href="/auth">Login</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
+            </CardTitle> */}
+          <Image
+            src="/logo_in_white.png"
+            alt="Company Logo"
+            width={300}
+            height={200}
+            
+            className="w-full"
+          />
+          <CardDescription>
+            Your hub for tracking progress and achieving business goals.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-4 ">
+            <Button asChild size="lg">
+              <Link href="/auth">Login</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
