@@ -20,11 +20,19 @@ export function ClientList() {
   const { users, loading } = useUserContext();
   const [search, setSearch] = useState("");
 
-  const filteredUsers = users.filter((user) =>
+  // const filteredUsers = users.filter((user) =>
+  //   Object.values(user).some((value) =>
+  //     value?.toLowerCase?.().includes(search.toLowerCase())
+  //   )
+  // );
+  const filteredUsers = users
+  .filter((user) => (user["role"] || "").toLowerCase() !== "admin") // Exclude admins
+  .filter((user) =>
     Object.values(user).some((value) =>
       value?.toLowerCase?.().includes(search.toLowerCase())
     )
   );
+
 
   // Only use headers at indexes 1, 2, 3, 7
   const rawHeaders = users.length > 0 ? Object.keys(users[0]) : [];

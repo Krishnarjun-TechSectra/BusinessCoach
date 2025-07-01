@@ -36,6 +36,7 @@ export default function AdminPage() {
             <Button
               onClick={() => signOut({ callbackUrl: "/auth" })}
               variant="outline"
+              className="bg-[rgb(5,69,167)] text-white"
             >
               Sign Out
             </Button>
@@ -76,13 +77,13 @@ export default function AdminPage() {
             <h1 className="text-3xl font-bold tracking-tight mt-6">
               All Clients
             </h1>
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-8 ">
               <div className="lg:col-span-2">
                 <ClientList />
               </div>
-              <div className="lg:col-span-1">
+              {/* <div className="lg:col-span-1">
                 <Leaderboard  />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

@@ -27,7 +27,7 @@ export default function ClientDetailPage() {
       <div>
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <Button onClick={() => signOut({ callbackUrl: "/auth" })} variant="outline">
+          <Button onClick={() => signOut({ callbackUrl: "/auth" })} variant="outline" className="bg-[rgb(5,69,167)] text-white">
             Sign Out
           </Button>
         </div>
@@ -56,7 +56,7 @@ export default function ClientDetailPage() {
       ) : error ? (
         <div className="text-red-500">Error: {error}</div>
       ) : (
-        <ProgressGoals progress={data.progress}  />
+        <ProgressGoals progress={data?.progress}  />
       )}
     </div>
   );

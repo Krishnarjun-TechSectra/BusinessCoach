@@ -176,6 +176,7 @@ function CustomTooltip({ children, content }: { children: React.ReactNode; conte
 }
 
 export function ProgressGoals({ progress }: { progress: ProgressItem[] }) {
+  console.log("Progress data", progress);
   const pivotTable = createPivotTable(progress)
   const { goals: extractedGoals, months: goalMonths } = extractGoalsData(progress)
 

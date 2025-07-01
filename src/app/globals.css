@@ -47,19 +47,19 @@
   --radius: 0.625rem;
 
   /* Light Theme */
-  --background: oklch(0.98 0.02 250);        /* off-white with blue tint */
-  --foreground: oklch(0.2 0.05 250);         /* deep blue for text */
-  --card: oklch(1 0 0);                      /* pure white */
+  --background: oklch(0.98 0.02 250); /* off-white with blue tint */
+  --foreground: oklch(0.2 0.05 250); /* deep blue for text */
+  --card: oklch(1 0 0); /* pure white */
   --card-foreground: oklch(0.2 0.05 250);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2 0.05 250);
-  --primary: oklch(0.6 0.18 260);            /* vibrant blue */
-  --primary-foreground: oklch(0.98 0 0);     /* white text on blue */
-  --secondary: oklch(0.92 0.02 250);         /* soft light blue */
+  --primary: oklch(0.6 0.18 260); /* vibrant blue */
+  --primary-foreground: oklch(0.98 0 0); /* white text on blue */
+  --secondary: oklch(0.92 0.02 250); /* soft light blue */
   --secondary-foreground: oklch(0.2 0.05 250);
   --muted: oklch(0.95 0.01 250);
   --muted-foreground: oklch(0.4 0.02 250);
-  --accent: oklch(0.85 0.05 260);            /* light accent blue */
+  --accent: oklch(0.85 0.05 260); /* light accent blue */
   --accent-foreground: oklch(0.2 0.05 250);
   --destructive: oklch(0.6 0.25 27);
   --border: oklch(0.9 0 0);
@@ -70,26 +70,34 @@
   --chart-3: oklch(0.45 0.12 210);
   --chart-4: oklch(0.75 0.16 80);
   --chart-5: oklch(0.7 0.14 50);
-  --sidebar: oklch(0.98 0.02 250);
+  /* --sidebar: oklch(0.98 0.02 250);
   --sidebar-foreground: oklch(0.2 0.05 250);
   --sidebar-primary: oklch(0.6 0.18 260);
   --sidebar-primary-foreground: oklch(0.98 0 0);
   --sidebar-accent: oklch(0.92 0.02 250);
   --sidebar-accent-foreground: oklch(0.2 0.05 250);
   --sidebar-border: oklch(0.9 0 0);
-  --sidebar-ring: oklch(0.6 0.18 260);
+  --sidebar-ring: oklch(0.6 0.18 260); */
+  --sidebar: oklch(0.35 0.18 260); /* deep blue background */
+  --sidebar-foreground: oklch(0.98 0 0); /* white text */
+  --sidebar-primary: oklch(0.45 0.18 260); /* slightly lighter deep blue */
+  --sidebar-primary-foreground: oklch(0.98 0 0); /* white text */
+  --sidebar-accent: oklch(0.6 0.18 260); /* brighter accent blue */
+  --sidebar-accent-foreground: oklch(0.98 0 0); /* white text */
+  --sidebar-border: oklch(0.4 0.1 260); /* subtle blue border */
+  --sidebar-ring: oklch(0.6 0.18 260); /* same as accent ring */
 }
 
 .dark {
-  --background: oklch(0.2 0.05 250);         /* deep blue background */
-  --foreground: oklch(0.98 0 0);             /* white text */
+  --background: oklch(0.2 0.05 250); /* deep blue background */
+  --foreground: oklch(0.98 0 0); /* white text */
   --card: oklch(0.25 0.05 250);
   --card-foreground: oklch(0.98 0 0);
   --popover: oklch(0.25 0.05 250);
   --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.6 0.18 260);            /* same vibrant blue */
+  --primary: oklch(0.6 0.18 260); /* same vibrant blue */
   --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.3 0.04 250);          /* dark muted blue */
+  --secondary: oklch(0.3 0.04 250); /* dark muted blue */
   --secondary-foreground: oklch(0.98 0 0);
   --muted: oklch(0.3 0.03 250);
   --muted-foreground: oklch(0.7 0.03 250);
