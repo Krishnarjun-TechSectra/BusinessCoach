@@ -48,7 +48,7 @@ export function AppShell({ role, children }: AppShellProps) {
                 <span className="font-semibold text-lg group-data-[collapsible=icon]:hidden">Business Coach</span>
             </div> */}
            <Image
-            src="/logo.png"
+            src="/logo_in_white.png"
             alt="Logo"
             width={150}
             height={80}
@@ -96,7 +96,7 @@ export function AppShell({ role, children }: AppShellProps) {
             <span className="font-semibold text-lg">Progression</span>
           </div> */}
           <Image
-            src="/logo.png"
+            src="/logo_in_white.png"
             alt="Logo"
             width={150}
             height={80}
