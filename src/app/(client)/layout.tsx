@@ -14,7 +14,7 @@ export default function ClientLayout({
       {/* Navbar */}
       <header className="w-full p-4 flex justify-between items-center bg-[rgb(5,69,167)] text-white shadow-md">
         <Image
-          src="/logo.png"
+          src="/logo_in_white.png"
           alt="Logo"
           width={150}
           height={80}
