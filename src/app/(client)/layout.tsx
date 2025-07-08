@@ -15,12 +15,14 @@ export default function ClientLayout({
         <div className="flex items-center gap-2">
           <Image
             src="/logo_in_white.png"
-            alt="Logo"
-            width={90}
-            height={50}
-            className="object-contain sm:w-[140px] sm:h-[90px]"
+            alt="Company Logo"
+            width={160}
+            height={60}
+            className="h-12 sm:h-16 lg:h-20 w-auto object-contain"
+            priority
           />
         </div>
+
         <h1 className="text-lg sm:text-2xl font-semibold whitespace-nowrap">
           Dashboard
         </h1>

@@ -82,7 +82,9 @@ export async function fetchOnboardingByEmail(
 ): Promise<OnboardingItems> {
   try {
     const response = await fetch(
-      `${process.env.GOOGLE_APPS_SCRIPT_URL}?action=getOnboarding&email=${encodeURIComponent(email)}`,
+      `${
+        process.env.GOOGLE_APPS_SCRIPT_URL
+      }?action=getOnboarding&email=${encodeURIComponent(email)}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -172,13 +174,12 @@ export async function fetchMonthlyDataByEmail(
   }
 }
 
-
-export async function fetchLeaderboardByMonth(
-  month: string
-): Promise<{ name: string; score: number }[]> {
+export async function fetchLeaderboardByMonth(): Promise<
+  { name: string; score: number }[]
+> {
   try {
     const response = await fetch(
-      `${process.env.GOOGLE_APPS_SCRIPT_URL}?action=getLeaderboard&month=${encodeURIComponent(month)}`,
+      `${process.env.GOOGLE_APPS_SCRIPT_URL}?action=getLeaderboard`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -214,4 +215,3 @@ export async function fetchLeaderboardByMonth(
     throw error;
   }
 }
-

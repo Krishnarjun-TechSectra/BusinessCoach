@@ -5,17 +5,16 @@ export interface LeaderboardEntry {
   score: number;
 }
 
-export function useLeaderboard(month: string) {
+export function useLeaderboard() {
   const [data, setData] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!month) return;
 
     async function fetchData() {
       try {
-        const res = await fetch(`/api/leaderboard?month=${encodeURIComponent(month)}`);
+        const res = await fetch(`/api/leaderboard`);
         if (!res.ok) throw new Error("Failed to load leaderboard");
         const json = await res.json();
         setData(json.leaderboard || []);
@@ -27,7 +26,7 @@ export function useLeaderboard(month: string) {
     }
 
     fetchData();
-  }, [month]);
+  }, []);
 
   return { data, isLoading, error };
 }

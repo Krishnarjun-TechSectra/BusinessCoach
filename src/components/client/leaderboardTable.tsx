@@ -38,7 +38,7 @@ export function Leaderboard() {
     setMonthKey(key);
   }, []);
 
-  const { data, isLoading, error } = useLeaderboard(monthKey);
+  const { data, isLoading, error } = useLeaderboard();
 
   const totalPages = data ? Math.ceil(data.length / ITEMS_PER_PAGE) : 1;
   const paginatedData = data?.slice(
