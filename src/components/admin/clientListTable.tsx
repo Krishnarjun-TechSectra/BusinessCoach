@@ -20,13 +20,18 @@ import { dummyUsers } from "@/lib/data";
 const ITEMS_PER_PAGE = 10;
 
 export function ClientList() {
-   const { users, loading } = useUserContext();
+  const { users, loading } = useUserContext();
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   // const users = dummyUsers
 
+  // const nonAdminUsers = users.filter(
+  //   (user) => (user["role"] || "").toLowerCase() !== "admin"
+  // );
   const nonAdminUsers = users.filter(
-    (user) => (user["role"] || "").toLowerCase() !== "admin"
+    (user) =>
+      (user["role"] || "").toLowerCase() !== "admin" &&
+      user["Email Address"] !== ""
   );
 
   const filteredUsers = nonAdminUsers.filter((user) =>
@@ -47,7 +52,7 @@ export function ClientList() {
     .filter((i) => i < rawHeaders.length)
     .map((i) => rawHeaders[i]);
 
-   if (loading) return <div>Loading users...</div>;
+  if (loading) return <div>Loading users...</div>;
 
   return (
     <Card>
@@ -86,6 +91,7 @@ export function ClientList() {
                       <Button asChild variant="outline" size="sm">
                         <Link
                           href={`/admin-dashboard/client/${user["Email Address"]}`}
+                          target="_blank"
                         >
                           View Dashboard
                         </Link>
@@ -124,9 +130,7 @@ export function ClientList() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
-                setCurrentPage((p) => Math.min(p + 1, totalPages))
-              }
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
               disabled={currentPage === totalPages}
             >
               Next
