@@ -15,12 +15,14 @@ import { Badge } from "@/components/ui/badge";
 import { useMonthlyData } from "@/hooks/useMonthlyDashboard"; // your custom hook
 import { Button } from "@/components/ui/button";
 import { signOut } from "next-auth/react";
+import { useOnboardingData } from "@/hooks/useOnboardingData";
 
 export default function ClientDetailPage() {
   const params = useParams();
   const email = decodeURIComponent(params.email as string);
 
-  const { data, isLoading, error } = useMonthlyData(email);
+    const monthly = useMonthlyData(email as string);
+    const onboarding = useOnboardingData(email as string);
 
   return (
     <div className="space-y-8 min-h-screen bg-gray-50 p-4">
@@ -35,7 +37,7 @@ export default function ClientDetailPage() {
         <div className="grid gap-6 md:grid-cols-2">
            <Card>
             <CardHeader>
-              <CardTitle>Welcome, {data?.progress[0].Name}!</CardTitle>
+              <CardTitle>Welcome, {monthly.data?.progress[0]?.Name}!</CardTitle>
               <CardDescription>Your account information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -51,12 +53,12 @@ export default function ClientDetailPage() {
           </Card>
         </div>
       </div>
-      {isLoading ? (
+      {monthly.isLoading ? (
         <div>Loading data...</div>
-      ) : error ? (
-        <div className="text-red-500">Error: {error}</div>
+      ) : monthly.error ? (
+        <div className="text-red-500">Error: {monthly.error}</div>
       ) : (
-        <ProgressGoals progress={data?.progress}  />
+        <ProgressGoals progress={monthly.data?.progress} onboarding={onboarding.data?.user}  />
       )}
     </div>
   );

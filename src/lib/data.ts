@@ -68,4 +68,16 @@ export const clientsData: Client[] = [
   { id: '8', name: 'Nexus Solutions', email: 'hello@nexussolutions.dev', type: 'Team', avatar: 'https://placehold.co/100x100.png', goals: goalsData, progress: progressData.map(p => ({...p, value: p.value - 2})) },
 ];
 
+
+export const dummyUsers = Array.from({ length: 35 }).map((_, i) => ({
+  "Timestamp": `2025-07-0${(i % 9) + 1} 10:0${i % 5}`,
+  "Name": `Client ${i + 1}`,
+  "Email Address": `client${i + 1}@example.com`,
+  "Phone Number": `98765432${(i % 10).toString().padStart(2, "0")}`,
+  "Age": `${20 + (i % 10)}`,
+  "City": ["Delhi", "Mumbai", "Chennai", "Bangalore", "Kolkata"][i % 5],
+  "Feedback": ["Great", "Good", "Average", "Poor", "Excellent"][i % 5],
+  "role": "client", // All are clients
+}));
+
 export const getClientById = (id: string) => clientsData.find(client => client.id === id);

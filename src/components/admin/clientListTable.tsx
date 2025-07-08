@@ -15,33 +15,39 @@ import { useUserContext } from "@/context/userContext";
 import { Search } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { dummyUsers } from "@/lib/data";
+
+const ITEMS_PER_PAGE = 10;
 
 export function ClientList() {
-  const { users, loading } = useUserContext();
+   const { users, loading } = useUserContext();
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  // const users = dummyUsers
 
-  // const filteredUsers = users.filter((user) =>
-  //   Object.values(user).some((value) =>
-  //     value?.toLowerCase?.().includes(search.toLowerCase())
-  //   )
-  // );
-  const filteredUsers = users
-  .filter((user) => (user["role"] || "").toLowerCase() !== "admin") // Exclude admins
-  .filter((user) =>
+  const nonAdminUsers = users.filter(
+    (user) => (user["role"] || "").toLowerCase() !== "admin"
+  );
+
+  const filteredUsers = nonAdminUsers.filter((user) =>
     Object.values(user).some((value) =>
       value?.toLowerCase?.().includes(search.toLowerCase())
     )
   );
 
+  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
-  // Only use headers at indexes 1, 2, 3, 7
   const rawHeaders = users.length > 0 ? Object.keys(users[0]) : [];
   const selectedHeaderIndexes = [1, 2, 3, 7];
   const headers = selectedHeaderIndexes
     .filter((i) => i < rawHeaders.length)
     .map((i) => rawHeaders[i]);
 
-  if (loading) return <div>Loading users...</div>;
+   if (loading) return <div>Loading users...</div>;
 
   return (
     <Card>
@@ -51,12 +57,15 @@ export function ClientList() {
           <Input
             placeholder="Search anything..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1); // Reset to first page on search
+            }}
             className="pl-10 w-full max-w-sm"
           />
         </div>
 
-        <div className="rounded-md border w-full">
+        <div className="rounded-md border w-full overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -67,8 +76,8 @@ export function ClientList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user, i) => (
+              {paginatedUsers.length > 0 ? (
+                paginatedUsers.map((user, i) => (
                   <TableRow key={i}>
                     {headers.map((key) => (
                       <TableCell key={key}>{user[key]}</TableCell>
@@ -97,6 +106,33 @@ export function ClientList() {
             </TableBody>
           </Table>
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-between items-center mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <div className="text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setCurrentPage((p) => Math.min(p + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

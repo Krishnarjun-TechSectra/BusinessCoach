@@ -7,134 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, Target, Calendar, Building2 } from "lucide-react"
-
-interface ProgressItem {
-  [key: string]: any
-}
-
-interface PivotTableData {
-  months: string[]
-  metrics: string[]
-  data: { [metric: string]: { [month: string]: string } }
-}
-
-function cleanFieldName(fieldName: string): string {
-  // Remove content within brackets/parentheses and clean up
-  return fieldName
-    .replace(/\s*$$[^)]*$$/g, "") // Remove content in parentheses
-    .replace(/\s*\[[^\]]*\]/g, "") // Remove content in square brackets
-    .replace(/\s*\{[^}]*\}/g, "") // Remove content in curly brackets
-    .trim()
-    .replace(/\s+/g, " ") // Replace multiple spaces with single space
-}
-
-function isGoalField(fieldName: string): boolean {
-  return /goal\s*no\s*\d+/i.test(fieldName)
-}
-
-function isExcludedField(fieldName: string): boolean {
-  const excludePatterns = [/timestamp/i, /email/i, /mail/i, /id/i, /name/i, /company/i]
-  return excludePatterns.some((pattern) => pattern.test(fieldName))
-}
-
-function getLastSixMonths(months: string[]): string[] {
-  // Sort months and return last 6
-  const sortedMonths = months.sort((a, b) => {
-    // Basic month sorting - you might want to improve this based on your date format
-    return new Date(a).getTime() - new Date(b).getTime()
-  })
-  return sortedMonths.slice(-6)
-}
-
-function createPivotTable(rawData: ProgressItem[]): PivotTableData {
-  if (!rawData || rawData.length === 0) {
-    return { months: [], metrics: [], data: {} }
-  }
-
-  // Get all unique field names from the data
-  const allFields = new Set<string>()
-  rawData.forEach((row) => {
-    Object.keys(row).forEach((key) => allFields.add(key))
-  })
-
-  // Find the month column
-  let monthColumn = ""
-  for (const field of allFields) {
-    if (/month/i.test(field)) {
-      monthColumn = field
-      break
-    }
-  }
-
-  // Get unique months and limit to last 6
-  const allMonths = [...new Set(rawData.map((row) => row[monthColumn] || "").filter(Boolean))]
-  const months = getLastSixMonths(allMonths)
-
-  // Get metric columns (exclude goals, personal info, and timestamp)
-  const metrics = Array.from(allFields).filter(
-    (field) => !isExcludedField(field) && !isGoalField(field) && field !== monthColumn,
-  )
-
-  // Create pivot data structure
-  const pivotData: { [metric: string]: { [month: string]: string } } = {}
-
-  metrics.forEach((metric) => {
-    pivotData[metric] = {}
-    months.forEach((month) => {
-      const matchingRow = rawData.find((row) => row[monthColumn] === month)
-      pivotData[metric][month] = matchingRow?.[metric] || "-"
-    })
-  })
-
-  return {
-    months,
-    metrics,
-    data: pivotData,
-  }
-}
-
-function extractGoalsData(rawData: ProgressItem[]): { goals: any[]; months: string[] } {
-  if (!rawData || rawData.length === 0) {
-    return { goals: [], months: [] }
-  }
-
-  const monthColumn = Object.keys(rawData[0]).find((key) => /month/i.test(key)) || ""
-  const months = getLastSixMonths([...new Set(rawData.map((row) => row[monthColumn] || "").filter(Boolean))])
-
-  const goalFields = Object.keys(rawData[0]).filter(isGoalField)
-
-  const goals = goalFields.map((field) => ({
-    name: cleanFieldName(field),
-    originalField: field,
-    data: months.reduce(
-      (acc, month) => {
-        const matchingRow = rawData.find((row) => row[monthColumn] === month)
-        acc[month] = matchingRow?.[field] || "-"
-        return acc
-      },
-      {} as { [month: string]: string },
-    ),
-  }))
-
-  return { goals, months }
-}
-
-function formatValue(value: any): React.ReactNode {
-  if (!value || value === "-") return "-"
-
-  // Convert value to string to ensure we can use string methods
-  const stringValue = String(value)
-
-  // Check for positive/negative indicators
-  if (/positive/i.test(stringValue)) {
-    return <Badge variant="outline">{stringValue}</Badge>
-  }
-  if (/negative/i.test(stringValue)) {
-    return <Badge variant="outline">{stringValue}</Badge>
-  }
-
-  return stringValue
-}
+import {
+  type ProgressItem,
+  type OnboardingItem,
+  createPivotTable,
+  extractGoalsFromOnboarding,
+  extractGoalsWithProgress,
+  formatValue,
+  cleanFieldName,
+} from "../shared/progressUtils"
 
 // Custom Tooltip Component
 function CustomTooltip({ children, content }: { children: React.ReactNode; content: string }) {
@@ -161,7 +42,7 @@ function CustomTooltip({ children, content }: { children: React.ReactNode; conte
       </div>
       {isVisible && (
         <div
-          className="fixed z-50 px-3 py-2 text-sm text-white bg-black rounded-md shadow-lg pointer-events-none break-words"
+          className="fixed z-50 px-3 py-2 text-sm text-white bg-black rounded-md shadow-lg pointer-events-none break-words "
           style={{
             left: position.x,
             top: position.y,
@@ -175,13 +56,28 @@ function CustomTooltip({ children, content }: { children: React.ReactNode; conte
   )
 }
 
-export function ProgressGoals({ progress }: { progress: ProgressItem[] }) {
-  console.log("Progress data", progress);
-  const pivotTable = createPivotTable(progress)
-  const { goals: extractedGoals, months: goalMonths } = extractGoalsData(progress)
+interface ProgressGoalsProps {
+  progress: ProgressItem[]
+  onboarding: OnboardingItem[]
+}
+
+// Update the component to use both onboarding goals and progress goals
+export function ProgressGoals({ progress, onboarding }: ProgressGoalsProps) {
+  console.log("Progress data", progress)
+  console.log("Onboarding data", onboarding)
+
+  const pivotTable = createPivotTable(progress, onboarding)
+  const { goals: onboardingGoals } = extractGoalsFromOnboarding(onboarding)
+  const { goals: progressGoals, months: goalMonths } = extractGoalsWithProgress(progress)
+
+  // Combine goals - use onboarding goals as titles but progress data for monthly tracking
+  const combinedGoals = progressGoals.map((progressGoal, index) => ({
+    name: onboardingGoals[index]?.value || progressGoal.name, // Use onboarding goal content as title
+    data: progressGoal.data,
+  }))
 
   return (
-    <div className="w-full  mx-auto space-y-6">
+    <div className="w-full mx-auto space-y-6">
       <div className="flex items-center gap-2 mb-6">
         <Building2 className="h-6 w-6 text-primary" />
         <h2 className="text-2xl font-bold">Business Dashboard</h2>
@@ -212,18 +108,28 @@ export function ProgressGoals({ progress }: { progress: ProgressItem[] }) {
             </CardHeader>
             <CardContent>
               {pivotTable.metrics.length > 0 ? (
-                <div className="rounded-lg border w-full">
+                <div className="rounded-lg border w-full overflow-x-auto">
                   <Table className="w-full table-fixed">
                     <TableHeader>
                       <TableRow className="bg-muted/50">
-                        <TableHead className="font-semibold w-[40%] border-r">Metric</TableHead>
+                        <TableHead className="font-semibold w-[25%] border-r sticky left-0 bg-muted/50">
+                          Metric
+                        </TableHead>
+                        <TableHead className="text-center font-semibold w-[12%] border-r bg-yellow-50">
+                          6 Month Target
+                        </TableHead>
+                        <TableHead className="text-center font-semibold w-[12%] border-r bg-yellow-50">
+                          Monthly Target
+                        </TableHead>
+                        <TableHead className="text-center font-semibold w-[12%] border-r bg-green-50">
+                          Total (6M)
+                        </TableHead>
                         {pivotTable.months.map((month, index) => (
                           <TableHead
                             key={month}
-                            className={`text-center font-semibold ${
+                            className={`text-center font-semibold w-[${Math.floor(39 / pivotTable.months.length)}%] ${
                               index < pivotTable.months.length - 1 ? "border-r" : ""
                             }`}
-                            style={{ width: `${60 / pivotTable.months.length}%` }}
                           >
                             <CustomTooltip content={month}>
                               <div className="truncate">{month}</div>
@@ -233,33 +139,54 @@ export function ProgressGoals({ progress }: { progress: ProgressItem[] }) {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {pivotTable.metrics.map((metric, index) => (
-                        <TableRow key={metric} className={index % 2 === 0 ? "bg-muted/20" : ""}>
-                          <TableCell className="font-medium bg-background border-r w-[40%] p-2">
-                            <CustomTooltip content={cleanFieldName(metric)}>
-                              <div className="truncate text-sm">{cleanFieldName(metric)}</div>
-                            </CustomTooltip>
-                          </TableCell>
-                          {pivotTable.months.map((month, monthIndex) => {
-                            const cellValue = String(pivotTable.data[metric]?.[month] || "-")
-                            return (
-                              <TableCell
-                                key={`${metric}-${month}`}
-                                className={`text-center p-2 ${
-                                  monthIndex < pivotTable.months.length - 1 ? "border-r" : ""
-                                }`}
-                                style={{ width: `${60 / pivotTable.months.length}%` }}
-                              >
-                                <CustomTooltip content={cellValue}>
-                                  <div className="truncate text-sm">
-                                    {formatValue(pivotTable.data[metric]?.[month] || "-")}
-                                  </div>
-                                </CustomTooltip>
-                              </TableCell>
-                            )
-                          })}
-                        </TableRow>
-                      ))}
+                      {pivotTable.metrics.map((metric, index) => {
+                        const cleanedMetric = cleanFieldName(metric)
+                        const targetData = pivotTable.targets[metric] // Use exact metric name
+
+                        return (
+                          <TableRow key={metric} className={index % 2 === 0 ? "bg-muted/20" : ""}>
+                            <TableCell className="font-medium bg-background border-r w-[25%] p-2 sticky left-0">
+                              <CustomTooltip content={cleanedMetric}>
+                                <div className="truncate text-sm">{cleanedMetric}</div>
+                              </CustomTooltip>
+                            </TableCell>
+                            <TableCell className="text-center p-2 border-r bg-yellow-50/50 w-[12%]">
+                              <CustomTooltip content={targetData?.sixMonth || "-"}>
+                                <div className="truncate text-sm font-medium">{targetData?.sixMonth || "-"}</div>
+                              </CustomTooltip>
+                            </TableCell>
+                            <TableCell className="text-center p-2 border-r bg-yellow-50/50 w-[12%]">
+                              <CustomTooltip content={targetData?.monthly || "-"}>
+                                <div className="truncate text-sm font-medium">{targetData?.monthly || "-"}</div>
+                              </CustomTooltip>
+                            </TableCell>
+                            <TableCell className="text-center p-2 border-r bg-green-50/50 w-[12%]">
+                              <CustomTooltip content={targetData?.total || "-"}>
+                                <div className="truncate text-sm font-semibold text-green-700">
+                                  {targetData?.total || "-"}
+                                </div>
+                              </CustomTooltip>
+                            </TableCell>
+                            {pivotTable.months.map((month, monthIndex) => {
+                              const cellValue = String(pivotTable.data[metric]?.[month] || "-")
+                              return (
+                                <TableCell
+                                  key={`${metric}-${month}`}
+                                  className={`text-center p-2 w-[${Math.floor(39 / pivotTable.months.length)}%] ${
+                                    monthIndex < pivotTable.months.length - 1 ? "border-r" : ""
+                                  }`}
+                                >
+                                  <CustomTooltip content={cellValue}>
+                                    <div className="truncate text-sm">
+                                      {formatValue(pivotTable.data[metric]?.[month] || "-")}
+                                    </div>
+                                  </CustomTooltip>
+                                </TableCell>
+                              )
+                            })}
+                          </TableRow>
+                        )
+                      })}
                     </TableBody>
                   </Table>
                 </div>
@@ -281,13 +208,13 @@ export function ProgressGoals({ progress }: { progress: ProgressItem[] }) {
                   <Target className="h-5 w-5" />
                   Goals Tracking
                 </CardTitle>
-                <Badge variant="outline">{extractedGoals.length} goals</Badge>
+                <Badge variant="outline">{combinedGoals.length} goals</Badge>
               </div>
             </CardHeader>
             <CardContent>
-              {extractedGoals.length > 0 ? (
+              {combinedGoals.length > 0 ? (
                 <div className="space-y-4">
-                  {extractedGoals.map((goal, index) => (
+                  {combinedGoals.map((goal, index) => (
                     <Card key={index} className="border-l-4 border-l-primary">
                       <CardHeader className="pb-3">
                         <CardTitle className="text-lg">{goal.name}</CardTitle>

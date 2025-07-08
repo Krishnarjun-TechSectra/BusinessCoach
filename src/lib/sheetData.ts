@@ -15,6 +15,10 @@ export interface ProcessedData {
   goals: GoalItem[];
 }
 
+export interface OnboardingItems {
+  [key: string]: string;
+}
+
 export async function fetchAllUsersFromSheet(): Promise<SheetUser[]> {
   try {
     const response = await fetch(
@@ -72,6 +76,51 @@ export async function fetchAllUsersFromSheet(): Promise<SheetUser[]> {
 //     throw new Error("Failed to load data");
 //   }
 // }
+
+export async function fetchOnboardingByEmail(
+  email: string
+): Promise<OnboardingItems> {
+  try {
+    const response = await fetch(
+      `${process.env.GOOGLE_APPS_SCRIPT_URL}?action=getOnboarding&email=${encodeURIComponent(email)}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        redirect: "follow",
+        credentials: "omit",
+      }
+    );
+
+    if (response.status === 302) {
+      const redirectUrl = response.headers.get("location") ?? "unknown";
+      throw new Error(
+        [
+          "Google Apps Script responded with HTTP 302 (redirect).",
+          "This typically means the Web App needs to be deployed with",
+          'access level set to **"Anyone (anonymous)"**.',
+          `Redirect target: ${redirectUrl}`,
+        ].join(" ")
+      );
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    return {
+      user: result.data,
+    };
+  } catch (error) {
+    console.error("[SheetData] fetchOnboardingByEmail error:", error);
+    throw error;
+  }
+}
 
 export async function fetchMonthlyDataByEmail(
   email: string
@@ -165,3 +214,4 @@ export async function fetchLeaderboardByMonth(
     throw error;
   }
 }
+

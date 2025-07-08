@@ -12,10 +12,12 @@ import {
 import { ProgressGoals } from "@/components/client/progressTable";
 import { Leaderboard } from "@/components/client/leaderboardTable";
 import { useMonthlyData } from "@/hooks/useMonthlyDashboard";
+import { useOnboardingData } from "@/hooks/useOnboardingData";
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
-  const { data, isLoading, error } = useMonthlyData(user?.email as  string);
+  const monthly = useMonthlyData(user?.email as string);
+  const onboarding = useOnboardingData(user?.email as string);
 
   if (loading || !user?.email) {
     return (
@@ -24,7 +26,8 @@ export default function Dashboard() {
       </div>
     );
   }
-
+  console.log("Onboarding data", onboarding);
+  console.log("Onboarding data", monthly);
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8">
       {/* Welcome Card */}
@@ -49,14 +52,17 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Progress Table */}
         <div className="lg:col-span-2">
-          {isLoading ? (
+          {monthly.isLoading ? (
             <div>Loading data...</div>
-          ) : error ? (
+          ) : monthly.error ? (
             <div className="text-white text-center font-bold bg-red-500 rounded-2xl">
-              Error: {error}
+              Error: {monthly.error}
             </div>
           ) : (
-            <ProgressGoals progress={data?.progress} />
+            <ProgressGoals
+              progress={monthly.data?.progress}
+              onboarding={onboarding.data?.user}
+            />
           )}
         </div>
 
