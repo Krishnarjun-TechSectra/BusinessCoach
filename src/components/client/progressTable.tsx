@@ -142,9 +142,7 @@ export function ProgressGoals({ progress, onboarding }: ProgressGoalsProps) {
                           <TableHead className="text-center font-semibold w-[12%] border-r bg-yellow-50">
                             Monthly Target
                           </TableHead>
-                          <TableHead className="text-center font-semibold w-[12%] border-r bg-green-50">
-                            Total (6M)
-                          </TableHead>
+
                           {pivotTable.months.map((month, index) => (
                             <TableHead
                               key={month}
@@ -161,6 +159,9 @@ export function ProgressGoals({ progress, onboarding }: ProgressGoalsProps) {
                               </CustomTooltip>
                             </TableHead>
                           ))}
+                          <TableHead className="text-center font-semibold w-[12%] border-r bg-green-50">
+                            Total
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -198,15 +199,7 @@ export function ProgressGoals({ progress, onboarding }: ProgressGoalsProps) {
                                   </div>
                                 </CustomTooltip>
                               </TableCell>
-                              <TableCell className="text-center p-2 border-r bg-green-50/50 w-[12%]">
-                                <CustomTooltip
-                                  content={targetData?.total || "-"}
-                                >
-                                  <div className="truncate text-sm font-semibold text-green-700">
-                                    {targetData?.total || "-"}
-                                  </div>
-                                </CustomTooltip>
-                              </TableCell>
+
                               {pivotTable.months.map((month, monthIndex) => {
                                 const cellValue = String(
                                   pivotTable.data[metric]?.[month] || "-"
@@ -233,6 +226,15 @@ export function ProgressGoals({ progress, onboarding }: ProgressGoalsProps) {
                                   </TableCell>
                                 );
                               })}
+                              <TableCell className="text-center p-2 border-r bg-green-50/50 w-[12%]">
+                                <CustomTooltip
+                                  content={targetData?.total || "-"}
+                                >
+                                  <div className="truncate text-sm font-semibold text-green-700">
+                                    {targetData?.total || "-"}
+                                  </div>
+                                </CustomTooltip>
+                              </TableCell>
                             </TableRow>
                           );
                         })}
