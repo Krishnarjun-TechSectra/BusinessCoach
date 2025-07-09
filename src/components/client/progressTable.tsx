@@ -72,6 +72,147 @@ function CustomTooltip({
     </>
   );
 }
+// Function to get ordinal value for time involvement (lower is better)
+function getTimeInvolvementOrder(value: string): number {
+  const timeOrder = {
+    "less than 1 hour a day": 1,
+    "2 to 4 hours a day": 2,
+    "5 to 6 hours a day": 3,
+    "7 to 8 hours a day": 4,
+    "more than 9 hours a day": 5,
+  }
+
+  const normalizedValue = value.toLowerCase().trim()
+  return timeOrder[normalizedValue as keyof typeof timeOrder] || 0
+}
+
+// Function to get ordinal value for business stage (higher is better)
+function getBusinessStageOrder(value: string): number {
+  const stageOrder = {
+    "challenge ( target audience is not defined )": 1,
+    challenge: 1,
+    "existence ( right product to right customer but inconsistent sales & marketing )": 2,
+    existence: 2,
+    "consistency ( right product to right customer and sales, marketing is consistent - mostly done by me )": 3,
+    consistency: 3,
+    "growth ( teams in operations, sales, marketing, accounts, hr, execution office of pc, sc and ea ) and my business has orders for the next 12 months.": 4,
+    growth: 4,
+    "success ( core team is running my business - ceo or executive assistant run the business )": 5,
+    success: 5,
+  }
+
+  const normalizedValue = value.toLowerCase().trim()
+
+  // Try exact match first
+  if (stageOrder[normalizedValue as keyof typeof stageOrder]) {
+    return stageOrder[normalizedValue as keyof typeof stageOrder]
+  }
+
+  // Try partial matches
+  if (normalizedValue.includes("challenge")) return 1
+  if (normalizedValue.includes("existence")) return 2
+  if (normalizedValue.includes("consistency")) return 3
+  if (normalizedValue.includes("growth")) return 4
+  if (normalizedValue.includes("success")) return 5
+
+  return 0
+}
+
+// Function to determine if a field uses reversed logic (lower is better)
+function isReversedLogicField(fieldName: string): boolean {
+  const reversedFields = [
+    "Total Debt as on Date",
+    "Total Outstanding as on Date with Customers",
+    "debt",
+    "outstanding",
+    "Time involvement in Day to day operations",
+  ]
+  return reversedFields.some((field) => fieldName.toLowerCase().includes(field.toLowerCase()))
+}
+
+// Function to determine if a field uses ordinal comparison
+function isOrdinalField(fieldName: string): boolean {
+  return (
+    fieldName.toLowerCase().includes("time involvement") ||
+    fieldName.toLowerCase().includes("stage of business") ||
+    fieldName.toLowerCase().includes("stage of the business")
+  )
+}
+
+// Function to check if target is achieved
+function isTargetAchieved(
+  actualValue: string,
+  targetValue: string,
+  fieldName: string
+): boolean | null {
+  if (
+    !actualValue ||
+    actualValue === "-" ||
+    !targetValue ||
+    targetValue === "-"
+  ) {
+    return null; // Cannot determine
+  }
+
+    // Handle ordinal fields (Time involvement and Business stage)
+  if (isOrdinalField(fieldName)) {
+    if (fieldName.toLowerCase().includes("time involvement")) {
+      const actualOrder = getTimeInvolvementOrder(actualValue)
+      const targetOrder = getTimeInvolvementOrder(targetValue)
+
+      if (actualOrder === 0 || targetOrder === 0) return null
+
+      // For time involvement: lower order is better
+      return actualOrder <= targetOrder
+    }
+
+    if (fieldName.toLowerCase().includes("stage")) {
+      const actualOrder = getBusinessStageOrder(actualValue)
+      const targetOrder = getBusinessStageOrder(targetValue)
+
+      if (actualOrder === 0 || targetOrder === 0) return null
+
+      // For business stage: higher order is better
+      return actualOrder >= targetOrder
+    }
+  }
+
+  const actual = Number.parseFloat(
+    String(actualValue).replace(/[^0-9.-]/g, "")
+  );
+  const target = Number.parseFloat(
+    String(targetValue).replace(/[^0-9.-]/g, "")
+  );
+
+  if (isNaN(actual) || isNaN(target)) {
+    return null;
+  }
+
+  const isReversed = isReversedLogicField(fieldName);
+
+  if (isReversed) {
+    // For debt/outstanding: lower is better
+    return actual <= target;
+  } else {
+    // For sales/profit: higher is better
+    return actual >= target;
+  }
+}
+
+// Function to get cell background color based on target achievement
+function getCellBackgroundColor(
+  actualValue: string,
+  targetValue: string,
+  fieldName: string
+): string {
+  const achieved = isTargetAchieved(actualValue, targetValue, fieldName);
+
+  if (achieved === null) {
+    return ""; // No special background
+  }
+
+  return achieved ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200";
+}
 
 interface ProgressGoalsProps {
   progress: ProgressItem[];
@@ -124,6 +265,16 @@ export function ProgressGoals({ progress, onboarding }: ProgressGoalsProps) {
                 <Badge variant="outline">
                   {pivotTable.months.length} months
                 </Badge>
+              </div>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-green-50 border border-green-200 rounded"></div>
+                  <span>Target Achieved</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-red-50 border border-red-200 rounded"></div>
+                  <span>Target Not Achieved</span>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -204,6 +355,14 @@ export function ProgressGoals({ progress, onboarding }: ProgressGoalsProps) {
                                 const cellValue = String(
                                   pivotTable.data[metric]?.[month] || "-"
                                 );
+                                const monthlyTarget =
+                                  targetData?.monthly || "-";
+                                const backgroundColorClass =
+                                  getCellBackgroundColor(
+                                    cellValue,
+                                    monthlyTarget,
+                                    metric
+                                  );
                                 return (
                                   <TableCell
                                     key={`${metric}-${month}`}
@@ -213,9 +372,15 @@ export function ProgressGoals({ progress, onboarding }: ProgressGoalsProps) {
                                       monthIndex < pivotTable.months.length - 1
                                         ? "border-r"
                                         : ""
-                                    }`}
+                                    } ${backgroundColorClass}`}
                                   >
-                                    <CustomTooltip content={cellValue}>
+                                    <CustomTooltip
+                                      content={`${cellValue} ${
+                                        monthlyTarget !== "-"
+                                          ? `(Target: ${monthlyTarget})`
+                                          : ""
+                                      }`}
+                                    >
                                       <div className="truncate text-sm">
                                         {formatValue(
                                           pivotTable.data[metric]?.[month] ||

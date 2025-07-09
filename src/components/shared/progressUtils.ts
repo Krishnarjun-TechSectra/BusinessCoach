@@ -16,6 +16,35 @@ export interface PivotTableData {
   };
 }
 
+// Function to format numbers with Indian numbering system (lakhs, crores)
+export function formatIndianNumber(num: number): string {
+  if (isNaN(num)) return "0";
+
+  const roundedNum = Math.ceil(num);
+  const isNegative = roundedNum < 0;
+  const numStr = Math.abs(roundedNum).toString();
+
+  if (numStr.length <= 3) {
+    return (isNegative ? "-" : "") + numStr;
+  }
+
+  let result = "";
+  let digitCount = 0;
+
+  // Process from right to left
+  for (let i = numStr.length - 1; i >= 0; i--) {
+    if (digitCount === 3) {
+      result = "," + result;
+    } else if (digitCount > 3 && (digitCount - 3) % 2 === 0) {
+      result = "," + result;
+    }
+    result = numStr[i] + result;
+    digitCount++;
+  }
+
+  return (isNegative ? "-" : "") + result;
+}
+
 export function cleanFieldName(fieldName: string): string {
   return fieldName
     .replace(/\s*$$[^)]*$$/g, "") // Remove content in parentheses
@@ -63,7 +92,7 @@ export function isTargetField(fieldName: string): boolean {
     /outstanding amount.*below.*2025-26/i,
     /cc.*debt balance.*below.*2025-26/i,
     /stage of business.*next year/i,
-    /total number of team members.*sales.*marketing.*operations/i,
+    /target number of team members.*sales.*marketing.*operations/i,
     /how much time.*involved.*day to day operations/i,
   ];
   return targetPatterns.some((pattern) => pattern.test(fieldName));
@@ -76,7 +105,7 @@ export function shouldDivideBy12(fieldName: string): boolean {
     /net profit.*2025-26/i,
     /outstanding amount.*below.*2025-26/i,
     /cc.*debt balance.*below.*2025-26/i,
-    /total number of team members.*sales.*marketing.*operations/i,
+    /target number of team members.*sales.*marketing.*operations/i,
   ];
   return divideBy12Patterns.some((pattern) => pattern.test(fieldName));
 }
@@ -92,7 +121,7 @@ export function shouldDivideBy6(fieldName: string): boolean {
     /net profit.*2025-26/i,
     /outstanding amount.*below.*2025-26/i,
     /cc.*debt balance.*below.*2025-26/i,
-    /total number of team members.*sales.*marketing.*operations/i,
+    /target number of team members.*sales.*marketing.*operations/i,
   ];
   return divideBy6Patterns.some((pattern) => pattern.test(fieldName));
 }
@@ -103,6 +132,18 @@ export function isStringField(fieldName: string): boolean {
     /how much time.*involved.*day to day/i,
   ];
   return stringPatterns.some((pattern) => pattern.test(fieldName));
+}
+
+// Function to check if a field should NOT be formatted as a number
+export function isTextOnlyField(fieldName: string): boolean {
+  const textOnlyPatterns = [
+    /time involvement.*day.*day.*operations/i,
+    /stage.*business.*today/i,
+    /cash flow.*positive.*negative/i,
+    /stage of business.*next year/i,
+    /how much time.*involved.*day to day/i,
+  ];
+  return textOnlyPatterns.some((pattern) => pattern.test(fieldName));
 }
 
 // Create a more flexible field mapping function
@@ -138,7 +179,7 @@ export function getFlexibleTargetFieldMapping(): { [key: string]: string } {
     {
       progress: "Total Number of team members",
       target:
-        "Total Number of team members in Sales, Marketing, Operations, HR, Accounts, R&D and Management ( Managers only )",
+        "Target Number of team members in Sales, Marketing, Operations, HR, Accounts, R&D and Management ( Managers only )",
     },
     {
       progress: "Time involvement in Day to day operations",
@@ -208,7 +249,7 @@ export function findMatchingTargetField(
     },
     {
       progressTerms: ["total number", "team members"],
-      targetTerms: ["team members", "sales", "marketing"],
+      targetTerms: ["target", "team members", "sales", "marketing"],
     },
     {
       progressTerms: ["time involvement", "day to day"],
@@ -261,7 +302,7 @@ export function getTargetFieldMapping(): { [progressField: string]: string } {
     "Total Outstanding as on Date with Customers ( only the invoices value which have crossed due dates )":
       "Outstanding Amount should be below Rs. _________ by end of 2025-26 ?",
     "Total Number of team members":
-      "Total Number of team members in Sales, Marketing, Operations, HR, Accounts, R&D and Management ( Managers only )",
+      "Target Number of team members in Sales, Marketing, Operations, HR, Accounts, R&D and Management ( Managers only )",
     "Time involvement in Day to day operations":
       "How much time would you like to be involved in Day to day operations",
     "What stage of the business are you in today":
@@ -309,7 +350,7 @@ export function calculateTotal(
     }
   });
 
-  return hasNumericData ? total.toLocaleString() : "-";
+  return hasNumericData ? formatIndianNumber(Math.ceil(total)) : "-";
 }
 
 export function calculateModeOrLatest(
@@ -396,8 +437,8 @@ export function calculateTarget(
   }
 
   return {
-    monthly: monthly.toLocaleString(),
-    sixMonth: sixMonth.toLocaleString(),
+    monthly: formatIndianNumber(Math.ceil(monthly)),
+    sixMonth: formatIndianNumber(Math.ceil(sixMonth)),
   };
 }
 
@@ -607,17 +648,38 @@ export function formatValue(value: any): React.ReactNode {
     );
   }
 
+  const isTextValue =
+    /hour.*day/i.test(stringValue) ||
+    /challenge|existence|consistency|growth|success/i.test(stringValue) ||
+    /stage.*business/i.test(stringValue) ||
+    /time.*involvement/i.test(stringValue);
+
+  if (isTextValue) {
+    return stringValue;
+  }
+  // Try to parse as number for formatting
+  const numericValue = Number.parseFloat(
+    String(stringValue).replace(/[^0-9.-]/g, "")
+  );
+
+  if (!isNaN(numericValue)) {
+    return formatIndianNumber(Math.ceil(numericValue));
+  }
+
   return stringValue;
 }
 
-export function calculateCashFlowTotal(data: { [month: string]: string }, months: string[]): string {
+export function calculateCashFlowTotal(
+  data: { [month: string]: string },
+  months: string[]
+): string {
   // For Cash Flow, return the most recent month's value
   for (const month of months) {
     // months are already sorted most recent first
-    const value = data[month]
+    const value = data[month];
     if (value && value !== "-") {
-      return value
+      return value;
     }
   }
-  return "-"
+  return "-";
 }
