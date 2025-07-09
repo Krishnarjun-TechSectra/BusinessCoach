@@ -58,7 +58,7 @@ export default function ClientDetailPage() {
       ) : monthly.error ? (
         <div className="text-red-500">Error: {monthly.error}</div>
       ) : (
-        <ProgressGoals progress={monthly.data?.progress} onboarding={onboarding.data?.user}  />
+        <ProgressGoals progress={monthly.data?.progress} onboarding={onboarding.data?.user} email={email}/>
       )}
     </div>
   );

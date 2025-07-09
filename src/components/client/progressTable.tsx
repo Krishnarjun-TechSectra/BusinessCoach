@@ -23,6 +23,7 @@ import {
   formatValue,
   cleanFieldName,
 } from "../shared/progressUtils";
+import GoalsTab from "./goalUpdateModal";
 
 // Custom Tooltip Component
 function CustomTooltip({
@@ -217,10 +218,11 @@ function getCellBackgroundColor(
 interface ProgressGoalsProps {
   progress: ProgressItem[];
   onboarding: OnboardingItem[];
+  email:string
 }
 
 // Update the component to use both onboarding goals and progress goals
-export function ProgressGoals({ progress, onboarding }: ProgressGoalsProps) {
+export function ProgressGoals({ progress, onboarding,email }: ProgressGoalsProps) {
   console.log("Progress data", progress);
   console.log("Onboarding data", onboarding);
 
@@ -229,10 +231,12 @@ export function ProgressGoals({ progress, onboarding }: ProgressGoalsProps) {
   const { goals: progressGoals, months: goalMonths } =
     extractGoalsWithProgress(progress);
 
+  // console.log("Progresssssssssssss",progressGoals);
   // Combine goals - use onboarding goals as titles but progress data for monthly tracking
   const combinedGoals = progressGoals.map((progressGoal, index) => ({
     name: onboardingGoals[index]?.value || progressGoal.name, // Use onboarding goal content as title
     data: progressGoal.data,
+    fieldName: progressGoal.originalField,
   }));
 
   return (
@@ -417,7 +421,7 @@ export function ProgressGoals({ progress, onboarding }: ProgressGoalsProps) {
           </Card>
         </TabsContent>
 
-        <TabsContent value="goals" className="space-y-4">
+        {/* <TabsContent value="goals" className="space-y-4">
           <Card>
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
@@ -468,7 +472,8 @@ export function ProgressGoals({ progress, onboarding }: ProgressGoalsProps) {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
+        <GoalsTab combinedGoals={combinedGoals} goalMonths={goalMonths} email={email}/>
       </Tabs>
     </div>
   );

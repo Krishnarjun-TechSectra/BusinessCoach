@@ -62,6 +62,7 @@ export default function Dashboard() {
             <ProgressGoals
               progress={monthly.data?.progress}
               onboarding={onboarding.data?.user}
+              email={user?.email as string}
             />
           )}
         </div>
