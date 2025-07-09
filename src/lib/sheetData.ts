@@ -215,3 +215,37 @@ export async function fetchLeaderboardByMonth(): Promise<
     throw error;
   }
 }
+
+export async function updateGoal({
+  email,
+  month,
+  goalColumn,
+  value,
+}: {
+  email: string;
+  month: string;
+  goalColumn: string;
+  value: string;
+}): Promise<{ success: boolean }> {
+  const response = await fetch(process.env.GOOGLE_APPS_SCRIPT_URL!, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "updateGoal", // ✅ Include this inside body
+      email,
+      month,
+      goalColumn,
+      value,
+    }),
+  });
+
+  if (!response.ok)
+    throw new Error(`Failed to update goal: ${response.statusText}`);
+
+  const result = await response.json();
+
+  if (result.error) throw new Error(result.error);
+
+  return result;
+}
+
