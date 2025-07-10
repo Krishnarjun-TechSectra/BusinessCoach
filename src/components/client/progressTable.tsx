@@ -320,7 +320,7 @@ export function ProgressGoals({
                               </CustomTooltip>
                             </TableHead>
                           ))}
-                          <TableHead className="text-center font-semibold w-[12%] border-r bg-green-50">
+                          <TableHead className="text-center font-semibold w-[12%] border-r ">
                             Total
                           </TableHead>
                         </TableRow>
@@ -415,7 +415,7 @@ export function ProgressGoals({
                                       : ""
                                   }`}
                                 >
-                                  <div className="truncate text-sm font-semibold text-green-700">
+                                  <div className="truncate text-sm font-semibold ">
                                     {targetData?.total || "-"}
                                   </div>
                                 </CustomTooltip>
