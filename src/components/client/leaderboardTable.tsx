@@ -20,6 +20,7 @@ import { PersonStandingIcon, Trophy, Loader2 } from "lucide-react";
 import { useLeaderboard } from "@/hooks/useLeaderBoard";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/authContext";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -27,6 +28,7 @@ export function Leaderboard() {
   const [monthDisplay, setMonthDisplay] = useState(""); // e.g. "June 2025"
   const [monthKey, setMonthKey] = useState(""); // e.g. "Score_June_2025"
   const [currentPage, setCurrentPage] = useState(1);
+  const { user } = useAuth();
 
   useEffect(() => {
     const now = new Date();
@@ -45,6 +47,10 @@ export function Leaderboard() {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
+  const isCurrentUser = (name: string) => {
+    return user?.name && name.toLowerCase() === user.name.toLowerCase();
+  };
 
   useEffect(() => {
     // Reset to first page when data changes (e.g., month switch)
@@ -94,9 +100,10 @@ export function Leaderboard() {
                         <div className="flex items-center gap-3">
                           <PersonStandingIcon />
                           <div className="flex flex-col">
-                            <span className="font-medium">{entry.name}</span>
-                            {entry.name === "You" && (
-                              <Badge className="w-fit">You</Badge>
+                            {isCurrentUser(entry.name) ? (
+                              <Badge className="w-fit">{entry.name}</Badge>
+                            ) : (
+                              <span className="font-medium">{entry.name}</span>
                             )}
                           </div>
                         </div>
