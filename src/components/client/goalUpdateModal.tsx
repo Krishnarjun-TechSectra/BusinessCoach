@@ -106,6 +106,10 @@ export default function GoalsTab({
               </CardTitle>
               <Badge variant="outline">{combinedGoals.length} goals</Badge>
             </div>
+            <span className="text-center  text-sm text-muted-foreground mt-2">
+              You need to fill in the Monthly Data for a month before you can
+              update its goal.
+            </span>
           </CardHeader>
 
           <CardContent>

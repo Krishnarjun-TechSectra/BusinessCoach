@@ -81,10 +81,10 @@ function getTimeInvolvementOrder(value: string): number {
     "5 to 6 hours a day": 3,
     "7 to 8 hours a day": 4,
     "more than 9 hours a day": 5,
-  }
+  };
 
-  const normalizedValue = value.toLowerCase().trim()
-  return timeOrder[normalizedValue as keyof typeof timeOrder] || 0
+  const normalizedValue = value.toLowerCase().trim();
+  return timeOrder[normalizedValue as keyof typeof timeOrder] || 0;
 }
 
 // Function to get ordinal value for business stage (higher is better)
@@ -100,23 +100,23 @@ function getBusinessStageOrder(value: string): number {
     growth: 4,
     "success ( core team is running my business - ceo or executive assistant run the business )": 5,
     success: 5,
-  }
+  };
 
-  const normalizedValue = value.toLowerCase().trim()
+  const normalizedValue = value.toLowerCase().trim();
 
   // Try exact match first
   if (stageOrder[normalizedValue as keyof typeof stageOrder]) {
-    return stageOrder[normalizedValue as keyof typeof stageOrder]
+    return stageOrder[normalizedValue as keyof typeof stageOrder];
   }
 
   // Try partial matches
-  if (normalizedValue.includes("challenge")) return 1
-  if (normalizedValue.includes("existence")) return 2
-  if (normalizedValue.includes("consistency")) return 3
-  if (normalizedValue.includes("growth")) return 4
-  if (normalizedValue.includes("success")) return 5
+  if (normalizedValue.includes("challenge")) return 1;
+  if (normalizedValue.includes("existence")) return 2;
+  if (normalizedValue.includes("consistency")) return 3;
+  if (normalizedValue.includes("growth")) return 4;
+  if (normalizedValue.includes("success")) return 5;
 
-  return 0
+  return 0;
 }
 
 // Function to determine if a field uses reversed logic (lower is better)
@@ -127,8 +127,10 @@ function isReversedLogicField(fieldName: string): boolean {
     "debt",
     "outstanding",
     "Time involvement in Day to day operations",
-  ]
-  return reversedFields.some((field) => fieldName.toLowerCase().includes(field.toLowerCase()))
+  ];
+  return reversedFields.some((field) =>
+    fieldName.toLowerCase().includes(field.toLowerCase())
+  );
 }
 
 // Function to determine if a field uses ordinal comparison
@@ -137,7 +139,7 @@ function isOrdinalField(fieldName: string): boolean {
     fieldName.toLowerCase().includes("time involvement") ||
     fieldName.toLowerCase().includes("stage of business") ||
     fieldName.toLowerCase().includes("stage of the business")
-  )
+  );
 }
 
 // Function to check if target is achieved
@@ -155,26 +157,26 @@ function isTargetAchieved(
     return null; // Cannot determine
   }
 
-    // Handle ordinal fields (Time involvement and Business stage)
+  // Handle ordinal fields (Time involvement and Business stage)
   if (isOrdinalField(fieldName)) {
     if (fieldName.toLowerCase().includes("time involvement")) {
-      const actualOrder = getTimeInvolvementOrder(actualValue)
-      const targetOrder = getTimeInvolvementOrder(targetValue)
+      const actualOrder = getTimeInvolvementOrder(actualValue);
+      const targetOrder = getTimeInvolvementOrder(targetValue);
 
-      if (actualOrder === 0 || targetOrder === 0) return null
+      if (actualOrder === 0 || targetOrder === 0) return null;
 
       // For time involvement: lower order is better
-      return actualOrder <= targetOrder
+      return actualOrder <= targetOrder;
     }
 
     if (fieldName.toLowerCase().includes("stage")) {
-      const actualOrder = getBusinessStageOrder(actualValue)
-      const targetOrder = getBusinessStageOrder(targetValue)
+      const actualOrder = getBusinessStageOrder(actualValue);
+      const targetOrder = getBusinessStageOrder(targetValue);
 
-      if (actualOrder === 0 || targetOrder === 0) return null
+      if (actualOrder === 0 || targetOrder === 0) return null;
 
       // For business stage: higher order is better
-      return actualOrder >= targetOrder
+      return actualOrder >= targetOrder;
     }
   }
 
@@ -218,11 +220,15 @@ function getCellBackgroundColor(
 interface ProgressGoalsProps {
   progress: ProgressItem[];
   onboarding: OnboardingItem[];
-  email:string
+  email: string;
 }
 
 // Update the component to use both onboarding goals and progress goals
-export function ProgressGoals({ progress, onboarding,email }: ProgressGoalsProps) {
+export function ProgressGoals({
+  progress,
+  onboarding,
+  email,
+}: ProgressGoalsProps) {
   console.log("Progress data", progress);
   console.log("Onboarding data", onboarding);
 
@@ -395,9 +401,19 @@ export function ProgressGoals({ progress, onboarding,email }: ProgressGoalsProps
                                   </TableCell>
                                 );
                               })}
-                              <TableCell className="text-center p-2 border-r bg-green-50/50 w-[12%]">
+                              <TableCell
+                                className={`text-center border-r w-[120px] lg:w-[150px] px-2 sm:px-4 py-2 ${getCellBackgroundColor(
+                                  targetData?.total || "-",
+                                  targetData?.sixMonth || "-",
+                                  metric
+                                )}`}
+                              >
                                 <CustomTooltip
-                                  content={targetData?.total || "-"}
+                                  content={`${targetData?.total || "-"} ${
+                                    targetData?.sixMonth !== "-"
+                                      ? `(Target: ${targetData?.sixMonth})`
+                                      : ""
+                                  }`}
                                 >
                                   <div className="truncate text-sm font-semibold text-green-700">
                                     {targetData?.total || "-"}
@@ -473,7 +489,11 @@ export function ProgressGoals({ progress, onboarding,email }: ProgressGoalsProps
             </CardContent>
           </Card>
         </TabsContent> */}
-        <GoalsTab combinedGoals={combinedGoals} goalMonths={goalMonths} email={email}/>
+        <GoalsTab
+          combinedGoals={combinedGoals}
+          goalMonths={goalMonths}
+          email={email}
+        />
       </Tabs>
     </div>
   );
