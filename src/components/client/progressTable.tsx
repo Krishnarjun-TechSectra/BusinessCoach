@@ -229,7 +229,7 @@ export function ProgressGoals({
   onboarding,
   email,
 }: ProgressGoalsProps) {
-  //console.log("Progress data", progress);
+  console.log("Progress data", progress);
   console.log("Onboarding data", onboarding);
 
   const pivotTable = createPivotTable(progress, onboarding);
