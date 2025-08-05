@@ -11,8 +11,17 @@ export interface PivotTableData {
   months: string[];
   metrics: string[];
   data: { [metric: string]: { [month: string]: string } };
+  // targets: {
+  //   [metric: string]: { monthly: string; sixMonth: string; total: string };
+  // };
   targets: {
-    [metric: string]: { monthly: string; sixMonth: string; total: string };
+    [metric: string]: {
+      monthly: string;
+      sixMonth: string;
+      oneYear: string;
+      total: string;
+      previousYear: string;
+    };
   };
 }
 
@@ -205,6 +214,53 @@ export function getFlexibleTargetFieldMapping(): { [key: string]: string } {
   return normalizedMapping;
 }
 
+// mapping function for previous year data from onboarding
+export function getFlexiblePreviousYearFieldMapping(): {
+  [key: string]: string;
+} {
+  const mappings = [
+    {
+      progress: "Total Sales for the month ( Without GST )",
+      previousYear: "Sales in 2024 - 25 ( Basic value without GST )"
+    },
+    {
+      progress:
+        "Total Gross Profit for the month ( Sales minus Cost of Goods sold ( Cost of Goods sold = Product cost only ) Do not include Wages, Salaries, Packing, Logistics on Sales etc in cost of Goods sold ( for this form only )",
+      previousYear: "Profitability in 2024-25 ( Net profit ) in Value",
+    },
+    {
+      progress:
+        "Total Debt as on Date ( Includes CC or OD limit with bank, Personal Loans, Business Loans etc ) Does NOT Include Home or Car loan outstanding",
+      previousYear: "Total CC + Debt as on date is ?",
+    },
+    {
+      progress:
+        "Total Outstanding as on Date with Customers ( only the invoices value which have crossed due dates )",
+      previousYear: "Total Outstanding with customers as on date is ?",
+    },
+    {
+      progress: "What stage of the business are you in today",
+      previousYear: "Stage of Business presently",
+    },
+    {
+      progress: "Time involvement in Day to day operations",
+      previousYear: "Time involvement in day to day operations",
+    },
+    {
+      progress: "Total Number of team members",
+      previousYear:
+        "Total Number of team members in Sales, Marketing, Operations, HR, Accounts, R&D and Management ( Managers only )",
+    },
+  ];
+
+  const normalizedMapping: { [key: string]: string } = {};
+  mappings.forEach(({ progress, previousYear }) => {
+    normalizedMapping[normalizeFieldName(progress)] = previousYear;
+  });
+
+  return normalizedMapping;
+}
+
 // Create a function to find matching target field from onboarding data
 export function findMatchingTargetField(
   progressField: string,
@@ -276,6 +332,83 @@ export function findMatchingTargetField(
       const matchingField = onboardingFields.find((field) => {
         const normalizedField = normalizeFieldName(field);
         return targetTerms.every((term) => normalizedField.includes(term));
+      });
+
+      if (matchingField) {
+        return matchingField;
+      }
+    }
+  }
+
+  return null;
+}
+
+// Create a function to find matching previous year field from onboarding data
+export function findMatchingPreviousYearField(
+  progressField: string,
+  onboardingFields: string[]
+): string | null {
+  const normalizedMapping = getFlexiblePreviousYearFieldMapping();
+  const normalizedProgressField = normalizeFieldName(progressField);
+
+  // First try exact normalized match
+  const exactPreviousYear = normalizedMapping[normalizedProgressField];
+  if (exactPreviousYear) {
+    // Find the actual field name in onboarding data that matches
+    const matchingField = onboardingFields.find(
+      (field) =>
+        normalizeFieldName(field) === normalizeFieldName(exactPreviousYear)
+    );
+    if (matchingField) {
+      return matchingField;
+    }
+  }
+
+  // If no exact match, try fuzzy matching based on key terms
+  const keyTermsMapping = [
+    {
+      progressTerms: ["total sales", "sales month"],
+      previousYearTerms: ["sales", "2024-25"],
+    },
+    {
+      progressTerms: ["net profit", "month"],
+      previousYearTerms: ["profitability", "2024-25"],
+    },
+    {
+      progressTerms: ["total debt", "date"],
+      previousYearTerms: ["cc", "debt", "date"],
+    },
+    {
+      progressTerms: ["total outstanding", "customers"],
+      previousYearTerms: ["outstanding", "customers", "date"],
+    },
+    {
+      progressTerms: ["stage", "business", "today"],
+      previousYearTerms: ["stage", "business", "presently"],
+    },
+    {
+      progressTerms: ["time involvement", "day to day"],
+      previousYearTerms: ["time involvement", "day to day"],
+    },
+    {
+      progressTerms: ["total number", "team members"],
+      previousYearTerms: ["total", "team members", "sales", "marketing"],
+    },
+  ];
+
+  const normalizedProgress = normalizeFieldName(progressField);
+
+  for (const { progressTerms, previousYearTerms } of keyTermsMapping) {
+    const progressMatch = progressTerms.every((term) =>
+      normalizedProgress.includes(term)
+    );
+
+    if (progressMatch) {
+      const matchingField = onboardingFields.find((field) => {
+        const normalizedField = normalizeFieldName(field);
+        return previousYearTerms.every((term) =>
+          normalizedField.includes(term)
+        );
       });
 
       if (matchingField) {
@@ -415,18 +548,23 @@ export function isStringModeField(fieldName: string): boolean {
 export function calculateTarget(
   value: string,
   fieldName: string
-): { monthly: string; sixMonth: string } {
+): { monthly: string; sixMonth: string; oneYear: string } {
   if (!value || value === "-" || isStringField(fieldName)) {
-    return { monthly: value || "-", sixMonth: value || "-" };
+    return {
+      monthly: value || "-",
+      sixMonth: value || "-",
+      oneYear: value || "-",
+    };
   }
 
   const numValue = Number.parseFloat(String(value).replace(/[^0-9.-]/g, ""));
   if (isNaN(numValue)) {
-    return { monthly: value, sixMonth: value };
+    return { monthly: value, sixMonth: value, oneYear: value };
   }
 
   let monthly = numValue;
   let sixMonth = numValue;
+  const oneYear = numValue;
 
   if (shouldDivideBy12(fieldName)) {
     monthly = numValue / 12;
@@ -439,6 +577,7 @@ export function calculateTarget(
   return {
     monthly: formatIndianNumber(Math.ceil(monthly)),
     sixMonth: formatIndianNumber(Math.ceil(sixMonth)),
+    oneYear: formatIndianNumber(Math.ceil(oneYear)),
   };
 }
 
@@ -488,9 +627,15 @@ export function createPivotTable(
     });
   });
 
-  // Extract targets from onboarding data using flexible field matching
+  // Extract targets and previous year data from onboarding
   const targets: {
-    [metric: string]: { monthly: string; sixMonth: string; total: string };
+    [metric: string]: {
+      monthly: string;
+      sixMonth: string;
+      oneYear: string;
+      total: string;
+      previousYear: string;
+    };
   } = {};
 
   if (onboardingData && onboardingData.length > 0) {
@@ -512,7 +657,9 @@ export function createPivotTable(
         targets[progressField] = {
           monthly: "Positive",
           sixMonth: "Positive",
+          oneYear: "Positive",
           total: total,
+          previousYear: "-",
         };
         return; // Skip the normal target matching for this field
       }
@@ -520,22 +667,57 @@ export function createPivotTable(
         progressField,
         onboardingFields
       );
-
-      console.log(`Progress field: "${progressField}"`);
-      console.log(`Matched target field: "${matchingTargetField}"`);
-      console.log(
-        `Target value:`,
-        matchingTargetField ? onboardingRow[matchingTargetField] : "Not found"
+      const matchingPreviousYearField = findMatchingPreviousYearField(
+        progressField,
+        onboardingFields
       );
 
+      console.log(`Progress field: "${progressField}"`);
+       console.log(`Matched target field: "${matchingTargetField}"`);
+      console.log(
+        `Matched previous year field: "${matchingPreviousYearField}"`
+      );
+       console.log(
+      `Target value:`,
+         matchingTargetField ? onboardingRow[matchingTargetField] : "Not found"
+       );
+      console.log(
+        `Previous year value:`,
+        matchingPreviousYearField
+          ? onboardingRow[matchingPreviousYearField]
+          : "Not found"
+      );
+      let targetCalc = { monthly: "-", sixMonth: "-", oneYear: "-" };
       if (
         matchingTargetField &&
         onboardingRow[matchingTargetField] !== undefined
       ) {
-        const targetCalc = calculateTarget(
+        targetCalc = calculateTarget(
           onboardingRow[matchingTargetField],
           matchingTargetField
         );
+
+        let previousYearValue = "-";
+        if (
+          matchingPreviousYearField &&
+          onboardingRow[matchingPreviousYearField] !== undefined
+        ) {
+          const rawPreviousValue = onboardingRow[matchingPreviousYearField];
+          // Format previous year value consistently
+          if (isTextOnlyField(progressField)) {
+            previousYearValue = rawPreviousValue;
+          } else {
+            const numValue = Number.parseFloat(
+              String(rawPreviousValue).replace(/[^0-9.-]/g, "")
+            );
+            if (!isNaN(numValue)) {
+              previousYearValue = formatIndianNumber(Math.ceil(numValue));
+            } else {
+              previousYearValue = rawPreviousValue;
+            }
+          }
+        }
+
         const total = calculateTotal(
           pivotData[progressField] || {},
           months,
@@ -545,13 +727,18 @@ export function createPivotTable(
         targets[progressField] = {
           monthly: targetCalc.monthly,
           sixMonth: targetCalc.sixMonth,
+          oneYear: targetCalc.oneYear,
           total: total,
+          previousYear: previousYearValue,
         };
-      } else {
+      } 
+      else {
         // No target available for this field
         targets[progressField] = {
           monthly: "-",
           sixMonth: "-",
+          oneYear: "-",
+          previousYear: "-",
           total: calculateTotal(
             pivotData[progressField] || {},
             months,

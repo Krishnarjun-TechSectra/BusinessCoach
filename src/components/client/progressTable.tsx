@@ -229,7 +229,7 @@ export function ProgressGoals({
   onboarding,
   email,
 }: ProgressGoalsProps) {
-  console.log("Progress data", progress);
+  //console.log("Progress data", progress);
   console.log("Onboarding data", onboarding);
 
   const pivotTable = createPivotTable(progress, onboarding);
@@ -290,12 +290,18 @@ export function ProgressGoals({
             <CardContent>
               {pivotTable.metrics.length > 0 ? (
                 <div className="rounded-lg border w-full overflow-x-auto">
-                  <div className="min-w-[1000px] sm:min-w-full">
+                  <div className="min-w-[1500px] md:min-w-full">
                     <Table className="w-full table-fixed">
                       <TableHeader>
                         <TableRow className="bg-muted/50">
                           <TableHead className="font-semibold w-[25%] border-r sticky left-0 bg-muted/50">
                             Metric
+                          </TableHead>
+                          <TableHead className="text-center font-semibold w-[120px] lg:w-[140px] border-r bg-yellow-50 px-2 sm:px-4">
+                            <div className="truncate">Previous Year</div>
+                          </TableHead>
+                          <TableHead className="text-center font-semibold w-[120px] lg:w-[150px] border-r bg-yellow-50 px-2 sm:px-4">
+                            <div className="truncate">One Year Target</div>
                           </TableHead>
                           <TableHead className="text-center font-semibold w-[12%] border-r bg-yellow-50">
                             6 Month Target
@@ -339,6 +345,26 @@ export function ProgressGoals({
                                 <CustomTooltip content={cleanedMetric}>
                                   <div className="truncate text-sm">
                                     {cleanedMetric}
+                                  </div>
+                                </CustomTooltip>
+                              </TableCell>
+                              <TableCell className="text-center border-r bg-yellow-50/50 w-[120px] lg:w-[140px] px-2 sm:px-4 py-2">
+                                <CustomTooltip
+                                  content={targetData?.previousYear || "-"}
+                                >
+                                  <div className="truncate text-xs sm:text-sm font-medium">
+                                    {formatValue(
+                                      targetData?.previousYear || "-"
+                                    )}
+                                  </div>
+                                </CustomTooltip>
+                              </TableCell>
+                              <TableCell className="text-center border-r bg-yellow-50/50 w-[120px] lg:w-[150px] px-2 sm:px-4 py-2">
+                                <CustomTooltip
+                                  content={targetData?.oneYear || "-"}
+                                >
+                                  <div className="truncate text-xs sm:text-sm font-medium">
+                                    {targetData?.oneYear || "-"}
                                   </div>
                                 </CustomTooltip>
                               </TableCell>
