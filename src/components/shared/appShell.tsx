@@ -12,7 +12,13 @@ import {
   SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Rocket, LayoutDashboard, Users, LogOut,ChartBarIncreasingIcon } from "lucide-react";
+import {
+  Rocket,
+  LayoutDashboard,
+  Users,
+  LogOut,
+  ChartBarIncreasingIcon,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -32,14 +38,18 @@ export function AppShell({ role, children }: AppShellProps) {
 
   const adminLinks = [
     { href: "/admin-dashboard/dashboard", label: "Admin Panel", icon: Users },
-    { href: "/admin-dashboard/leaderboard", label: "Leader Board", icon:  ChartBarIncreasingIcon},
+    {
+      href: "/admin-dashboard/leaderboard",
+      label: "Leader Board",
+      icon: ChartBarIncreasingIcon,
+    },
   ];
 
   const links = role === "admin" ? adminLinks : clientLinks;
 
   return (
-    <SidebarProvider>
-      <Sidebar>
+    <SidebarProvider className="flex h-full min-h-screen">
+      <Sidebar className="h-auto min-h-full">
         <SidebarHeader>
           {/* <div className="flex items-center gap-2 p-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -47,7 +57,7 @@ export function AppShell({ role, children }: AppShellProps) {
                 </div>
                 <span className="font-semibold text-lg group-data-[collapsible=icon]:hidden">Business Coach</span>
             </div> */}
-           <Image
+          <Image
             src="/logo_in_white.png"
             alt="Logo"
             width={150}

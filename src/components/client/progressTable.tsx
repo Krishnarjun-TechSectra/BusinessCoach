@@ -264,7 +264,7 @@ export function ProgressGoals({
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="progress" className="space-y-4">
+        {/* <TabsContent value="progress" className="space-y-4">
           <Card>
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
@@ -442,6 +442,206 @@ export function ProgressGoals({
                                   }`}
                                 >
                                   <div className="truncate text-sm font-semibold ">
+                                    {targetData?.total || "-"}
+                                  </div>
+                                </CustomTooltip>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No progress data available</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent> */}
+
+        <TabsContent value="progress" className="space-y-4">
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Monthly Progress Overview
+                </CardTitle>
+                <Badge variant="outline">
+                  {pivotTable.months.length} months
+                </Badge>
+              </div>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-green-50 border border-green-200 rounded"></div>
+                  <span>Target Achieved</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-red-50 border border-red-200 rounded"></div>
+                  <span>Target Not Achieved</span>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {pivotTable.metrics.length > 0 ? (
+                <div className="rounded-lg border w-full overflow-x-auto">
+                  <div className="min-w-max">
+                    <Table className="border-collapse w-full">
+                      <TableHeader>
+                        <TableRow className="bg-muted/50">
+                          <TableHead className="font-semibold sticky left-0  bg-muted/50 min-w-[140px] max-w-[140px] border-r truncate">
+                            Metric
+                          </TableHead>
+                          <TableHead className="text-center font-semibold sticky left-[140px]  bg-yellow-50 min-w-[110px] max-w-[110px] border-r truncate">
+                            Previous Year
+                          </TableHead>
+                          <TableHead className="text-center font-semibold sticky left-[250px]  bg-yellow-50 min-w-[110px] max-w-[110px] border-r truncate">
+                            One Year Target
+                          </TableHead>
+                          <TableHead className="text-center font-semibold sticky left-[360px]  bg-yellow-50 min-w-[110px] max-w-[110px] border-r truncate">
+                            6 Month Target
+                          </TableHead>
+                          <TableHead className="text-center font-semibold sticky left-[470px]  bg-yellow-50 min-w-[110px] max-w-[110px] border-r truncate">
+                            Monthly Target
+                          </TableHead>
+
+                          {pivotTable.months.map((month) => (
+                            <TableHead
+                              key={month}
+                              className="text-center font-semibold min-w-[100px] max-w-[100px] border-r truncate"
+                            >
+                              <CustomTooltip content={month}>
+                                <div className="truncate">{month}</div>
+                              </CustomTooltip>
+                            </TableHead>
+                          ))}
+
+                          <TableHead className="text-center font-semibold sticky right-0  bg-yellow-50 min-w-[110px] max-w-[110px] border-l truncate">
+                            Total
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {pivotTable.metrics.map((metric, index) => {
+                          const cleanedMetric = cleanFieldName(metric);
+                          const targetData = pivotTable.targets[metric];
+
+                          return (
+                            <TableRow
+                              key={metric}
+                              className={index % 2 === 0 ? "bg-muted/20" : ""}
+                            >
+                              {/* Metric */}
+                              <TableCell className="font-medium sticky left-0 z-10 bg-background border-r min-w-[140px] max-w-[140px] p-2 truncate">
+                                <CustomTooltip content={cleanedMetric}>
+                                  <div className="truncate text-sm">
+                                    {cleanedMetric}
+                                  </div>
+                                </CustomTooltip>
+                              </TableCell>
+
+                              {/* Previous Year */}
+                              <TableCell className="text-center sticky left-[140px] z-10 bg-yellow-50/50 border-r min-w-[110px] max-w-[110px] px-2 sm:px-4 py-2 truncate">
+                                <CustomTooltip
+                                  content={targetData?.previousYear || "-"}
+                                >
+                                  <div className="truncate text-xs sm:text-sm font-medium">
+                                    {formatValue(
+                                      targetData?.previousYear || "-"
+                                    )}
+                                  </div>
+                                </CustomTooltip>
+                              </TableCell>
+
+                              {/* One Year Target */}
+                              <TableCell className="text-center sticky left-[250px] z-10 bg-yellow-50/50 border-r min-w-[110px] max-w-[110px] px-2 sm:px-4 py-2 truncate">
+                                <CustomTooltip
+                                  content={targetData?.oneYear || "-"}
+                                >
+                                  <div className="truncate text-xs sm:text-sm font-medium">
+                                    {targetData?.oneYear || "-"}
+                                  </div>
+                                </CustomTooltip>
+                              </TableCell>
+
+                              {/* 6 Month Target */}
+                              <TableCell className="text-center sticky left-[360px] z-10 bg-yellow-50/50 border-r min-w-[110px] max-w-[110px] p-2 truncate">
+                                <CustomTooltip
+                                  content={targetData?.sixMonth || "-"}
+                                >
+                                  <div className="truncate text-sm font-medium">
+                                    {targetData?.sixMonth || "-"}
+                                  </div>
+                                </CustomTooltip>
+                              </TableCell>
+
+                              {/* Monthly Target */}
+                              <TableCell className="text-center sticky left-[470px] z-10 bg-yellow-50/50 border-r min-w-[110px] max-w-[110px] p-2 truncate">
+                                <CustomTooltip
+                                  content={targetData?.monthly || "-"}
+                                >
+                                  <div className="truncate text-sm font-medium">
+                                    {targetData?.monthly || "-"}
+                                  </div>
+                                </CustomTooltip>
+                              </TableCell>
+
+                              {/* Month columns */}
+                              {pivotTable.months.map((month) => {
+                                const cellValue = String(
+                                  pivotTable.data[metric]?.[month] || "-"
+                                );
+                                const monthlyTarget =
+                                  targetData?.monthly || "-";
+                                const backgroundColorClass =
+                                  getCellBackgroundColor(
+                                    cellValue,
+                                    monthlyTarget,
+                                    metric
+                                  );
+                                return (
+                                  <TableCell
+                                    key={`${metric}-${month}`}
+                                    className={`text-center p-2 min-w-[100px] max-w-[100px] border-r truncate ${backgroundColorClass}`}
+                                  >
+                                    <CustomTooltip
+                                      content={`${cellValue} ${
+                                        monthlyTarget !== "-"
+                                          ? `(Target: ${monthlyTarget})`
+                                          : ""
+                                      }`}
+                                    >
+                                      <div className="truncate text-sm">
+                                        {formatValue(
+                                          pivotTable.data[metric]?.[month] ||
+                                            "-"
+                                        )}
+                                      </div>
+                                    </CustomTooltip>
+                                  </TableCell>
+                                );
+                              })}
+
+                              {/* Total */}
+                              <TableCell
+                                className={`text-center sticky right-0 z-10 border-l min-w-[110px] max-w-[110px] px-2 sm:px-4 py-2 truncate ${getCellBackgroundColor(
+                                  targetData?.total || "-",
+                                  targetData?.sixMonth || "-",
+                                  metric
+                                )}`}
+                              >
+                                <CustomTooltip
+                                  content={`${targetData?.total || "-"} ${
+                                    targetData?.sixMonth !== "-"
+                                      ? `(Target: ${targetData?.sixMonth})`
+                                      : ""
+                                  }`}
+                                >
+                                  <div className="truncate text-sm font-semibold">
                                     {targetData?.total || "-"}
                                   </div>
                                 </CustomTooltip>
